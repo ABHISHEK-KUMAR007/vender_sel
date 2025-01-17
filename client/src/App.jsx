@@ -3,17 +3,20 @@ import { BrowserRouter as Router, Route, Routes, useNavigate } from "react-route
 import VendorLogin from "./component/login/VendorLogin";
 import MiningCorporationLogin from "./component/login/MiningCorporationLogin";
 import HomePage from "./component/home/home";
+import Layout from "./component/layout/vendorNav";
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Use Home component for the root route */}
         <Route path="/" element={<HomePage />} />
-        <Route path="/vendor-login" element={<VendorLogin />} />
+        <Route  path="/vendor-login" element={<VendorLogin />} />
         <Route path="/mining-login" element={<MiningCorporationLogin />} />
       </Routes>
     </Router>
+    // <>
+    //   <Layout/>
+    // </>
   );
 }
 

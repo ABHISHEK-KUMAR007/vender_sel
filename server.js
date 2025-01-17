@@ -1,50 +1,54 @@
-import express from "express";
+// server.js
+const express = require('express');
+const cors = require('cors');
+const morgan = require('morgan');
+const connectDB = require('./config/db');
+const authRoutes = require('./routes/authRoutes');
+const path = require('path');
+require('dotenv').config();
 
-import dotenv from "dotenv";
-import morgan from "morgan";
-import connectDB from "./config/db.js";
-
-import cors from "cors";
-import path from "path";
-import {fileURLToPath } from 'url';
-//configure env
-dotenv.config();
-
-//databse config
-connectDB();
-
-
-const __filename =fileURLToPath(import.meta.url);
-const __dirname=path.dirname(__filename);
-//rest object
 const app = express();
 
+// Connect to MongoDB
+connectDB();
 
-// Middlewares
-app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
-  credentials: true
-}));
+// Middleware
 app.use(express.json());
-app.use(morgan("dev"));
-app.use(express.static(path.join(__dirname,'./client/build')))
+app.use(express.urlencoded({ extended: true }));
+app.use(cors());
+app.use(morgan('dev')); // Logging
 
-//routes
-// app.use("/api/v1/auth", authRoutes);
+// Routes
+app.use('/api/auth', authRoutes);
 
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+    success: false,
+    message: 'Something went wrong!',
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+  });
+});
 
-//rest api
-app.use('*',function(req,res){
-  res.sendFile(path.join(__dirname,'./client/build/index.html'));
-})
+// Serve static assets in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static('client/build'));
+  
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
+  });
+}
 
-//PORT
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 5000;
 
-//run listen
 app.listen(PORT, () => {
-  console.log(
-    `Server Running on ${process.env.DEV_MODE} mode on port ${PORT}`.bgCyan
-      .white
-  );
+  console.log(`Server running on port ${PORT}`);
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err) => {
+  console.log('Unhandled Rejection:', err);
+  // Close server & exit process
+  server.close(() => process.exit(1));
 });
